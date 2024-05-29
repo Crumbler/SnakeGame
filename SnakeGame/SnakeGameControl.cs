@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 
@@ -66,11 +67,21 @@ public sealed class SnakeGameControl : UIElement
 
     public SnakeGameControl()
     {
+        Focusable = true;
+        ClipToBounds = true;
+
         RenderTimerFrequency = DesiredFramerate;
         
         renderTimer.Tick += OnRenderTimer;
         stopwatch.Start();
         renderTimer.Start();
+        
+        KeyDown += SnakeGameControl_KeyDown;
+    }
+
+    private void SnakeGameControl_KeyDown(object sender, KeyEventArgs e)
+    {
+        
     }
 
     private void OnRenderTimer(object? sender, EventArgs e)

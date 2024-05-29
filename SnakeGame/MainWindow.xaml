@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:SnakeGame"
         mc:Ignorable="d"
         Title="MainWindow" Height="800" Width="1000"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        Loaded="Window_Loaded">
     <Window.Resources>
         <DrawingBrush x:Key="backgroundBrush"
                       TileMode="Tile" Viewport="0, 0, 20, 20"
@@ -31,8 +32,8 @@
         </DrawingBrush>
     </Window.Resources>
     <Viewbox>
-        <local:SnakeGameControl ClipToBounds="True" DesiredFramerate="60"
+        <local:SnakeGameControl DesiredFramerate="60"
          BackgroundBrush="{StaticResource backgroundBrush}"
-         HorizontalSize="20" VerticalSize="16"/>
+         HorizontalSize="20" VerticalSize="16" x:Name="gameControl"/>
     </Viewbox>
 </Window>

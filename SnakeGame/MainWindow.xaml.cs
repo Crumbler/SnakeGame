@@ -20,5 +20,10 @@ namespace SnakeGame
         {
             InitializeComponent();
         }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            gameControl.Focus();
+        }
     }
 }
