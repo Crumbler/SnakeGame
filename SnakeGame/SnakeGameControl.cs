@@ -65,18 +65,28 @@ public sealed class SnakeGameControl : UIElement
         }
     }
 
-    public SnakeGameControl()
+    public SnakeGameControl() : base()
     {
         Focusable = true;
         ClipToBounds = true;
-
+        
         RenderTimerFrequency = DesiredFramerate;
         
+        KeyDown += SnakeGameControl_KeyDown;
+    }
+
+    protected override void OnVisualParentChanged(DependencyObject oldParent)
+    {
+        base.OnVisualParentChanged(oldParent);
+
+        Initialize();
+    }
+
+    private void Initialize()
+    {
         renderTimer.Tick += OnRenderTimer;
         stopwatch.Start();
         renderTimer.Start();
-        
-        KeyDown += SnakeGameControl_KeyDown;
     }
 
     private void SnakeGameControl_KeyDown(object sender, KeyEventArgs e)
