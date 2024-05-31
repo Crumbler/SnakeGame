@@ -1,4 +1,5 @@
-﻿using GameLogic;
+﻿using CustomTimers;
+using GameLogic;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -15,8 +16,7 @@ namespace SnakeGame;
 public sealed class SnakeGameControl : UIElement
 {
     private const double CellSize = 10;
-
-    private readonly Pen pen = new(Brushes.Blue, 5.0);
+    private const int MillisecondPerGameTick = 300;
 
     private double desiredFramerate = 60;
 
@@ -25,12 +25,27 @@ public sealed class SnakeGameControl : UIElement
             FontWeights.DemiBold, FontStretches.Normal);
 
     private static readonly FormattedText gameNotRunningText = new(
-        "Press Space \nto start",
+        "Press Space\nto start",
         CultureInfo.InvariantCulture, FlowDirection.LeftToRight, 
-        messageTypeface, 20, Brushes.Black, 1.0);
+        messageTypeface, 20, Brushes.Black, 1.0)
+        {
+            TextAlignment = TextAlignment.Center
+        },
+        gameOverText = new(
+        "Game over\nPress R\nto Restart",
+        CultureInfo.InvariantCulture, FlowDirection.LeftToRight,
+        messageTypeface, 20, Brushes.Black, 1.0)
+        {
+            TextAlignment = TextAlignment.Center
+        };
 
     private readonly DispatcherTimer renderTimer = new(DispatcherPriority.Send);
+    private readonly MultimediaTimer gameTimer = new()
+    {
+        Interval = 16
+    };
     private readonly Stopwatch stopwatch = new();
+    private TimeSpan elapsedTime;
 
     private int horizontalSize = 10;
     private int verticalSize = 10;
@@ -41,6 +56,16 @@ public sealed class SnakeGameControl : UIElement
     {
         get; set;
     } = new SolidColorBrush();
+
+    public Brush SnakeBrush
+    {
+        get; set;
+    } = Brushes.Green;
+
+    public Brush FoodBrush
+    {
+        get; set;
+    } = Brushes.Red;
 
     public double DesiredFramerate
     {
@@ -87,6 +112,8 @@ public sealed class SnakeGameControl : UIElement
         
         KeyDown += SnakeGameControl_KeyDown;
 
+        gameTimer.Elapsed += OnGameTimer;
+
         game = null!;
     }
 
@@ -100,7 +127,6 @@ public sealed class SnakeGameControl : UIElement
     private void Initialize()
     {
         gameNotRunningText.PixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
-        gameNotRunningText.TextAlignment = TextAlignment.Center;
 
         game = new Game(HorizontalSize, VerticalSize);
 
@@ -111,8 +137,25 @@ public sealed class SnakeGameControl : UIElement
     {
         game.Start();
 
-        stopwatch.Start();
         renderTimer.Start();
+        stopwatch.Start();
+        gameTimer.Start();
+        elapsedTime = TimeSpan.Zero;
+    }
+
+    private void RestartGame()
+    {
+        game.Reset();
+
+        renderTimer.Stop();
+        stopwatch.Stop();
+
+        if (gameTimer.IsRunning)
+        {
+            gameTimer.Stop();
+        }
+
+        InvalidateVisual();
     }
 
     private void SnakeGameControl_KeyDown(object sender, KeyEventArgs e)
@@ -125,12 +168,54 @@ public sealed class SnakeGameControl : UIElement
                     StartGame();
                 }
                 break;
+
+            case Key.R:
+                RestartGame();
+                break;
+
+            case Key.A:
+                SetSnakeDirection(Direction.Left);
+                break;
+
+            case Key.D:
+                SetSnakeDirection(Direction.Right);
+                break;
+
+            case Key.W:
+                SetSnakeDirection(Direction.Up);
+                break;
+
+            case Key.S:
+                SetSnakeDirection(Direction.Down);
+                break;
         }
+    }
+
+    private void SetSnakeDirection(Direction direction)
+    {
+        game.SnakeDirection = direction;
     }
 
     private void OnRenderTimer(object? sender, EventArgs e)
     {
         InvalidateVisual();
+    }
+
+    private void OnGameTimer(object? sender, EventArgs e)
+    {
+        elapsedTime += stopwatch.Elapsed;
+        stopwatch.Restart();
+
+        while (elapsedTime.Milliseconds >= MillisecondPerGameTick && game.State != GameState.Over)
+        {
+            elapsedTime -= TimeSpan.FromMilliseconds(MillisecondPerGameTick);
+            game.Advance();
+        }
+
+        if (game.State == GameState.Over)
+        {
+            gameTimer.Stop();
+        }
     }
 
     protected override void OnRender(DrawingContext context)
@@ -144,7 +229,7 @@ public sealed class SnakeGameControl : UIElement
                 break;
 
             case GameState.Running:
-                DrawGameRunning(context);
+                DrawGame(context);
                 break;
 
             case GameState.Over:
@@ -172,15 +257,27 @@ public sealed class SnakeGameControl : UIElement
         context.DrawText(text, textPoint);
     }
 
-    private void DrawGameRunning(DrawingContext context)
+    private void DrawGame(DrawingContext context)
     {
-        double x = Math.Sin(stopwatch.Elapsed.TotalMilliseconds / 500.0) * 50.0 + 50.0;
-        context.DrawLine(pen, new Point(), new Point(x, 100));
+        for (int i = 0; i < game.SnakeParts.Count; ++i)
+        {
+            var part = game.SnakeParts[i];
+
+            var cellPoint = new Point(part.x * CellSize, part.y * CellSize);
+
+            context.DrawRectangle(SnakeBrush, null,
+                new Rect(cellPoint, new Size(CellSize, CellSize)));
+        }
+
+        var foodPoint = new Point(game.FoodPosition.x * CellSize, game.FoodPosition.y * CellSize);
+        context.DrawRectangle(FoodBrush, null,
+            new Rect(foodPoint, new Size(CellSize, CellSize)));
     }
 
     private void DrawGameOver(DrawingContext context)
     {
-
+        DrawGame(context);
+        DrawCenteredText(context, gameOverText);
     }
 
     protected override void ArrangeCore(Rect finalRect)
