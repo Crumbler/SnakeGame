@@ -89,6 +89,8 @@ public sealed class Game
                 break;
         }
 
+        field[tailPos.y, tailPos.x] = false;
+
         if (newPos.x < 0 || newPos.y < 0 ||
             newPos.x >= horizontalSize || newPos.y >= verticalSize ||
             field[newPos.y, newPos.x])
@@ -98,7 +100,6 @@ public sealed class Game
         }
 
         field[newPos.y, newPos.x] = true;
-        field[tailPos.y, tailPos.x] = false;
         
         LastSnakeDirection = SnakeDirection;
 
