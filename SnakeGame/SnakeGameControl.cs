@@ -105,7 +105,6 @@ public sealed class SnakeGameControl : UIElement
 
         double x = Math.Sin(stopwatch.Elapsed.TotalMilliseconds / 500.0) * 50.0 + 50.0;
         context.DrawLine(pen, new Point(0, 0), new Point(x, 100));
-
     }
 
     private void DrawBackground(DrawingContext context)
