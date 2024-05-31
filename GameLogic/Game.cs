@@ -28,7 +28,7 @@ public sealed class Game
         private set;
     }
 
-    public IReadOnlyCollection<(sbyte y, sbyte x)> SnakeParts => snakeParts;
+    public IReadOnlyList<(sbyte y, sbyte x)> SnakeParts => snakeParts;
 
     private readonly int horizontalSize, verticalSize;
 
@@ -68,7 +68,7 @@ public sealed class Game
 
         (sbyte y, sbyte x) tailPos = snakeParts[0];
 
-        var newPos = tailPos;
+        var newPos = snakeParts[^1];
 
         switch (SnakeDirection)
         {
@@ -76,7 +76,7 @@ public sealed class Game
                 newPos.x--;
                 break;
 
-            case Direction.Top:
+            case Direction.Up:
                 newPos.y--;
                 break;
 
@@ -84,28 +84,33 @@ public sealed class Game
                 newPos.x++;
                 break;
 
-            case Direction.Bottom:
+            case Direction.Down:
                 newPos.y++;
                 break;
         }
 
         if (newPos.x < 0 || newPos.y < 0 ||
-            newPos.x >= horizontalSize || newPos.y >= verticalSize)
+            newPos.x >= horizontalSize || newPos.y >= verticalSize ||
+            field[newPos.y, newPos.x])
         {
             GameOver();
             return;
         }
 
+        field[newPos.y, newPos.x] = true;
+        field[tailPos.y, tailPos.x] = false;
+        
         LastSnakeDirection = SnakeDirection;
 
         var span = CollectionsMarshal.AsSpan(snakeParts);
 
-        span[..^1].CopyTo(span[1..]);
-        snakeParts[^1] = newPos;
+        span[1..].CopyTo(span[..^1]);
+        span[^1] = newPos;
 
         if (newPos == FoodPosition)
         {
             snakeParts.Insert(0, tailPos);
+            field[tailPos.y, tailPos.x] = true;
             PlaceFood();
         }
     }
@@ -132,9 +137,9 @@ public sealed class Game
         Array.Clear(field);
 
         snakeParts.Clear();
-        snakeParts.Add((0, 0));
+        snakeParts.Add(((sbyte y, sbyte x))(verticalSize / 2, horizontalSize / 2));
 
-        field[0, 0] = true;
+        field[verticalSize / 2, horizontalSize / 2] = true;
 
         SnakeDirection = Direction.Right;
         LastSnakeDirection = Direction.Right;
