@@ -1,7 +1,9 @@
-﻿using System;
+﻿using GameLogic;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -18,11 +20,22 @@ public sealed class SnakeGameControl : UIElement
 
     private double desiredFramerate = 60;
 
+    private static readonly Typeface messageTypeface =
+        new(new FontFamily("Verdana"), FontStyles.Normal,
+            FontWeights.DemiBold, FontStretches.Normal);
+
+    private static readonly FormattedText gameNotRunningText = new(
+        "Press Space \nto start",
+        CultureInfo.InvariantCulture, FlowDirection.LeftToRight, 
+        messageTypeface, 20, Brushes.Black, 1.0);
+
     private readonly DispatcherTimer renderTimer = new(DispatcherPriority.Send);
     private readonly Stopwatch stopwatch = new();
 
     private int horizontalSize = 10;
     private int verticalSize = 10;
+
+    private Game game;
 
     public Brush BackgroundBrush
     {
@@ -73,6 +86,8 @@ public sealed class SnakeGameControl : UIElement
         RenderTimerFrequency = DesiredFramerate;
         
         KeyDown += SnakeGameControl_KeyDown;
+
+        game = null!;
     }
 
     protected override void OnVisualParentChanged(DependencyObject oldParent)
@@ -84,14 +99,33 @@ public sealed class SnakeGameControl : UIElement
 
     private void Initialize()
     {
+        gameNotRunningText.PixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
+        gameNotRunningText.TextAlignment = TextAlignment.Center;
+
+        game = new Game(HorizontalSize, VerticalSize);
+
         renderTimer.Tick += OnRenderTimer;
+    }
+
+    private void StartGame()
+    {
+        game.Start();
+
         stopwatch.Start();
         renderTimer.Start();
     }
 
     private void SnakeGameControl_KeyDown(object sender, KeyEventArgs e)
     {
-        
+        switch (e.Key)
+        {
+            case Key.Space:
+                if (game.State == GameState.NotStarted)
+                {
+                    StartGame();
+                }
+                break;
+        }
     }
 
     private void OnRenderTimer(object? sender, EventArgs e)
@@ -103,13 +137,50 @@ public sealed class SnakeGameControl : UIElement
     {
         DrawBackground(context);
 
-        double x = Math.Sin(stopwatch.Elapsed.TotalMilliseconds / 500.0) * 50.0 + 50.0;
-        context.DrawLine(pen, new Point(0, 0), new Point(x, 100));
+        switch (game.State)
+        {
+            case GameState.NotStarted:
+                DrawGameNotStarted(context);
+                break;
+
+            case GameState.Running:
+                DrawGameRunning(context);
+                break;
+
+            case GameState.Over:
+                DrawGameOver(context);
+                break;
+        }
     }
 
     private void DrawBackground(DrawingContext context)
     {
         context.DrawRectangle(BackgroundBrush, null, new Rect(RenderSize));
+    }
+
+    private void DrawGameNotStarted(DrawingContext context)
+    {
+        DrawCenteredText(context, gameNotRunningText);
+    }
+
+    private void DrawCenteredText(DrawingContext context, FormattedText text)
+    {
+        var textPoint = (Point)RenderSize;
+        textPoint.X /= 2.0;
+        textPoint.Y = (textPoint.Y - text.Height) / 2.0;
+
+        context.DrawText(text, textPoint);
+    }
+
+    private void DrawGameRunning(DrawingContext context)
+    {
+        double x = Math.Sin(stopwatch.Elapsed.TotalMilliseconds / 500.0) * 50.0 + 50.0;
+        context.DrawLine(pen, new Point(), new Point(x, 100));
+    }
+
+    private void DrawGameOver(DrawingContext context)
+    {
+
     }
 
     protected override void ArrangeCore(Rect finalRect)

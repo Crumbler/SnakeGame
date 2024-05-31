@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SnakeGame", "SnakeGame\Snak
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomTimers", "CustomTimers\CustomTimers.csproj", "{FBEF96AF-51BA-4EE4-AA2F-5884EB22C98F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameLogic", "GameLogic\GameLogic.csproj", "{5C82DA5C-BC0B-486E-9835-545934FB6DDE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{FBEF96AF-51BA-4EE4-AA2F-5884EB22C98F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FBEF96AF-51BA-4EE4-AA2F-5884EB22C98F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FBEF96AF-51BA-4EE4-AA2F-5884EB22C98F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C82DA5C-BC0B-486E-9835-545934FB6DDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C82DA5C-BC0B-486E-9835-545934FB6DDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C82DA5C-BC0B-486E-9835-545934FB6DDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C82DA5C-BC0B-486E-9835-545934FB6DDE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

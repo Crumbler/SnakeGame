@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CustomTimers\CustomTimers.csproj" />
+    <ProjectReference Include="..\GameLogic\GameLogic.csproj" />
   </ItemGroup>
 
 </Project>
