@@ -30,10 +30,28 @@
                 </DrawingGroup>
             </DrawingBrush.Drawing>
         </DrawingBrush>
+        <DrawingGroup x:Key="foodDrawing">
+            <GeometryDrawing Brush="Red">
+                <GeometryDrawing.Geometry>
+                    <EllipseGeometry Center="5, 7" RadiusX="3" RadiusY="3"/>
+                </GeometryDrawing.Geometry>
+            </GeometryDrawing>
+            <GeometryDrawing Brush="SaddleBrown">
+                <GeometryDrawing.Geometry>
+                    <RectangleGeometry Rect="4.5, 0, 1, 4.5"/>
+                </GeometryDrawing.Geometry>
+            </GeometryDrawing>
+            <GeometryDrawing Brush="Green">
+                <GeometryDrawing.Geometry>
+                    <RectangleGeometry Rect="5.5, 0, 3, 3"/>
+                </GeometryDrawing.Geometry>
+            </GeometryDrawing>
+        </DrawingGroup>
     </Window.Resources>
     <Viewbox>
         <local:SnakeGameControl DesiredFramerate="60"
          BackgroundBrush="{StaticResource backgroundBrush}"
-         HorizontalSize="16" VerticalSize="10" x:Name="gameControl"/>
+         HorizontalSize="16" VerticalSize="10" x:Name="gameControl"
+         FoodDrawing="{StaticResource foodDrawing}"/>
     </Viewbox>
 </Window>

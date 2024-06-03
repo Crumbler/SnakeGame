@@ -53,6 +53,7 @@ public sealed class SnakeGameControl : UIElement
 
     private Game game;
 
+    private readonly TranslateTransform foodTranslateTransform = new();
     private readonly List<(TranslateTransform tr, RotateTransform rt)> transforms =
     [
         (new TranslateTransform(), new RotateTransform(0, CellSize / 2.0, CellSize / 2.0))
@@ -63,15 +64,15 @@ public sealed class SnakeGameControl : UIElement
         get; set;
     } = new SolidColorBrush();
 
+    public Drawing? FoodDrawing
+    {
+        get; set;
+    }
+
     public Brush SnakeBrush
     {
         get; set;
     } = Brushes.Green;
-
-    public Brush FoodBrush
-    {
-        get; set;
-    } = Brushes.Red;
 
     public double DesiredFramerate
     {
@@ -280,10 +281,17 @@ public sealed class SnakeGameControl : UIElement
         }
 
         DrawSnake(context);
-        
-        var foodPoint = new Point(game.FoodPosition.x * CellSize, game.FoodPosition.y * CellSize);
-        context.DrawRectangle(FoodBrush, null,
-            new Rect(foodPoint, new Size(CellSize, CellSize)));
+
+        DrawFood(context);
+    }
+
+    private void DrawFood(DrawingContext context)
+    {
+        TranslateToCell(context, foodTranslateTransform, ((sbyte y, sbyte x))game.FoodPosition);
+
+        context.DrawDrawing(FoodDrawing);
+
+        context.Pop();
     }
 
     private static void TranslateToCell(DrawingContext context, TranslateTransform transform,
