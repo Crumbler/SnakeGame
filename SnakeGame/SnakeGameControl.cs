@@ -74,6 +74,8 @@ public sealed class SnakeGameControl : UIElement
         get; set;
     } = Brushes.Green;
 
+    private readonly Pen SnakePen = new(null, CellSize * 0.01);
+
     public double DesiredFramerate
     {
         get => desiredFramerate;
@@ -144,6 +146,8 @@ public sealed class SnakeGameControl : UIElement
         gameNotRunningText.PixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
 
         game = new Game(HorizontalSize, VerticalSize);
+
+        SnakePen.Brush = SnakeBrush;
 
         renderTimer.Tick += OnRenderTimer;
     }
@@ -399,7 +403,7 @@ public sealed class SnakeGameControl : UIElement
 
     private void DrawSnakeTrunk(DrawingContext context)
     {
-        context.DrawRectangle(SnakeBrush, null,
+        context.DrawRectangle(SnakeBrush, SnakePen,
                     new Rect(0, (CellSize - SnakeWidth) / 2.0,
                         CellSize, SnakeWidth));
     }
@@ -411,13 +415,13 @@ public sealed class SnakeGameControl : UIElement
             bodyLength = CellSize - bodyX,
             turnHeight = bodyLength - SnakeWidth;
 
-        context.DrawRectangle(SnakeBrush, null,
+        context.DrawRectangle(SnakeBrush, SnakePen,
             new Rect(bodyX, bodyY,
                 bodyLength, SnakeWidth));
 
         double turnY = isUp ? 0 : bodyLength;
 
-        context.DrawRectangle(SnakeBrush, null,
+        context.DrawRectangle(SnakeBrush, SnakePen,
             new Rect(bodyX, turnY,
                 SnakeWidth, turnHeight));
     }
@@ -428,7 +432,7 @@ public sealed class SnakeGameControl : UIElement
             bodyY = bodyX,
             bodyLength = (CellSize - SnakeWidth) / 2.0 + SnakeWidth;
 
-        context.DrawRectangle(SnakeBrush, null,
+        context.DrawRectangle(SnakeBrush, SnakePen,
                     new Rect(bodyX, bodyY,
                         bodyLength, SnakeWidth));
     }
@@ -439,7 +443,7 @@ public sealed class SnakeGameControl : UIElement
             bodyY = (CellSize - SnakeWidth) / 2.0,
             bodyLength = (CellSize - SnakeWidth) / 2.0 + SnakeWidth;
 
-        context.DrawRectangle(SnakeBrush, null,
+        context.DrawRectangle(SnakeBrush, SnakePen,
                     new Rect(bodyX, bodyY,
                         bodyLength, SnakeWidth));
 
@@ -475,7 +479,7 @@ public sealed class SnakeGameControl : UIElement
         const double bodyX = (CellSize - SnakeWidth) / 2.0,
             bodyY = bodyX;
 
-        context.DrawRectangle(SnakeBrush, null,
+        context.DrawRectangle(SnakeBrush, SnakePen,
                     new Rect(bodyX, bodyY,
                         SnakeWidth, SnakeWidth));
 
