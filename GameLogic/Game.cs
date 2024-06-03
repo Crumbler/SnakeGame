@@ -66,9 +66,9 @@ public sealed class Game
             throw new InvalidOperationException("Game not running");
         }
 
-        (sbyte y, sbyte x) tailPos = snakeParts[0];
+        (sbyte y, sbyte x) tailPos = snakeParts[^1];
 
-        var newPos = snakeParts[^1];
+        var newPos = snakeParts[0];
 
         switch (SnakeDirection)
         {
@@ -105,12 +105,12 @@ public sealed class Game
 
         var span = CollectionsMarshal.AsSpan(snakeParts);
 
-        span[1..].CopyTo(span[..^1]);
-        span[^1] = newPos;
+        span[..^1].CopyTo(span[1..]);
+        span[0] = newPos;
 
         if (newPos == FoodPosition)
         {
-            snakeParts.Insert(0, tailPos);
+            snakeParts.Add(tailPos);
             field[tailPos.y, tailPos.x] = true;
             PlaceFood();
         }
