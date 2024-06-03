@@ -15,7 +15,8 @@ namespace SnakeGame;
 
 public sealed class SnakeGameControl : UIElement
 {
-    private const double CellSize = 10;
+    private const double CellSize = 10,
+        SnakeWidth = CellSize * 0.7;
     private const int MillisecondPerGameTick = 300;
 
     private double desiredFramerate = 60;
@@ -26,11 +27,11 @@ public sealed class SnakeGameControl : UIElement
 
     private static readonly FormattedText gameNotRunningText = new(
         "Press Space\nto start",
-        CultureInfo.InvariantCulture, FlowDirection.LeftToRight, 
+        CultureInfo.InvariantCulture, FlowDirection.LeftToRight,
         messageTypeface, 20, Brushes.Black, 1.0)
-        {
-            TextAlignment = TextAlignment.Center
-        },
+    {
+        TextAlignment = TextAlignment.Center
+    },
         gameOverText = new(
         "Game over\nPress R\nto Restart",
         CultureInfo.InvariantCulture, FlowDirection.LeftToRight,
@@ -51,6 +52,11 @@ public sealed class SnakeGameControl : UIElement
     private int verticalSize = 10;
 
     private Game game;
+
+    private readonly List<(TranslateTransform tr, RotateTransform rt)> transforms =
+    [
+        (new TranslateTransform(), new RotateTransform(0, CellSize / 2.0, CellSize / 2.0))
+    ];
 
     public Brush BackgroundBrush
     {
@@ -102,6 +108,14 @@ public sealed class SnakeGameControl : UIElement
             verticalSize = value;
         }
     }
+
+    private static double DirectionToAngle(Direction direction) => direction switch
+    {
+        Direction.Down => 90,
+        Direction.Left => 180,
+        Direction.Up => 270,
+        _ => 0
+    };
 
     public SnakeGameControl() : base()
     {
@@ -259,19 +273,229 @@ public sealed class SnakeGameControl : UIElement
 
     private void DrawGame(DrawingContext context)
     {
-        for (int i = 0; i < game.SnakeParts.Count; ++i)
+        for (int i = game.SnakeParts.Count - transforms.Count; i > 0; --i)
         {
-            var part = game.SnakeParts[i];
-
-            var cellPoint = new Point(part.x * CellSize, part.y * CellSize);
-
-            context.DrawRectangle(SnakeBrush, null,
-                new Rect(cellPoint, new Size(CellSize, CellSize)));
+            transforms.Add((new TranslateTransform(),
+                new RotateTransform(0, CellSize / 2.0, CellSize / 2.0)));
         }
 
+        DrawSnake(context);
+        
         var foodPoint = new Point(game.FoodPosition.x * CellSize, game.FoodPosition.y * CellSize);
         context.DrawRectangle(FoodBrush, null,
             new Rect(foodPoint, new Size(CellSize, CellSize)));
+    }
+
+    private static void TranslateToCell(DrawingContext context, TranslateTransform transform,
+        (sbyte y, sbyte x) cell)
+    {
+        transform.X = cell.x * CellSize;
+        transform.Y = cell.y * CellSize;
+
+        context.PushTransform(transform);
+    }
+
+    private static void RotateByDirection(DrawingContext context, RotateTransform transform,
+        Direction direction)
+    {
+        transform.Angle = DirectionToAngle(direction);
+
+        context.PushTransform(transform);
+    }
+
+    private static Direction GetDirection((sbyte y, sbyte x) from, (sbyte y, sbyte x) to)
+    {
+        if (from.x < to.x)
+        {
+            return Direction.Right;
+        }
+
+        if (from.x > to.x)
+        {
+            return Direction.Left;
+        }
+
+        if (from.y < to.y)
+        {
+            return Direction.Down;
+        }
+
+        return Direction.Up;
+    }
+
+    private static bool IsUp(Direction a, Direction b) => (a, b) switch
+    {
+        (Direction.Left, Direction.Up) => true,
+        (Direction.Down, Direction.Left) => true,
+        (Direction.Right, Direction.Down) => true,
+        (Direction.Up, Direction.Right) => true,
+        _ => false
+    };
+
+    private void DrawSnake(DrawingContext context)
+    {
+        TranslateToCell(context, transforms[0].tr, game.SnakeParts[0]);
+        RotateByDirection(context, transforms[0].rt, game.LastSnakeDirection);
+
+        if (game.SnakeParts.Count == 1)
+        {
+            DrawLoneSnakeHead(context);
+        }
+        else
+        {
+            DrawSnakeHead(context);
+        }
+
+        context.Pop();
+        context.Pop();
+
+        for (int i = 1; i < game.SnakeParts.Count - 1; ++i)
+        {
+            var part = game.SnakeParts[i];
+            var prevPart = game.SnakeParts[i - 1];
+            var nextPart = game.SnakeParts[i + 1];
+
+            bool vertDiff = prevPart.y != nextPart.y;
+            bool horDiff = prevPart.x != nextPart.x;
+
+            TranslateToCell(context, transforms[i].tr, game.SnakeParts[i]);
+            RotateByDirection(context, transforms[i].rt, GetDirection(part, prevPart));
+
+            if (vertDiff ^ horDiff)
+            {
+                DrawSnakeTrunk(context);
+            }
+            else
+            {
+                bool isUp = IsUp(GetDirection(prevPart, part), GetDirection(part, nextPart));
+                DrawSnakeTurn(context, isUp);
+            }
+
+            context.Pop();
+            context.Pop();
+        }
+
+        if (game.SnakeParts.Count > 1)
+        {
+            TranslateToCell(context, transforms[^1].tr, game.SnakeParts[^1]);
+
+            RotateByDirection(context, transforms[^1].rt, 
+                GetDirection(game.SnakeParts[^1], game.SnakeParts[^2]));
+
+            DrawSnakeTail(context);
+
+            context.Pop();
+            context.Pop();
+        }
+    }
+
+    private void DrawSnakeTrunk(DrawingContext context)
+    {
+        context.DrawRectangle(SnakeBrush, null,
+                    new Rect(0, (CellSize - SnakeWidth) / 2.0,
+                        CellSize, SnakeWidth));
+    }
+
+    private void DrawSnakeTurn(DrawingContext context, bool isUp)
+    {
+        const double bodyX = (CellSize - SnakeWidth) / 2.0,
+            bodyY = bodyX,
+            bodyLength = CellSize - bodyX,
+            turnHeight = bodyLength - SnakeWidth;
+
+        context.DrawRectangle(SnakeBrush, null,
+            new Rect(bodyX, bodyY,
+                bodyLength, SnakeWidth));
+
+        double turnY = isUp ? 0 : bodyLength;
+
+        context.DrawRectangle(SnakeBrush, null,
+            new Rect(bodyX, turnY,
+                SnakeWidth, turnHeight));
+    }
+
+    private void DrawSnakeTail(DrawingContext context)
+    {
+        const double bodyX = (CellSize - SnakeWidth) / 2.0,
+            bodyY = bodyX,
+            bodyLength = (CellSize - SnakeWidth) / 2.0 + SnakeWidth;
+
+        context.DrawRectangle(SnakeBrush, null,
+                    new Rect(bodyX, bodyY,
+                        bodyLength, SnakeWidth));
+    }
+
+    private void DrawSnakeHead(DrawingContext context)
+    {
+        const double bodyX = 0,
+            bodyY = (CellSize - SnakeWidth) / 2.0,
+            bodyLength = (CellSize - SnakeWidth) / 2.0 + SnakeWidth;
+
+        context.DrawRectangle(SnakeBrush, null,
+                    new Rect(bodyX, bodyY,
+                        bodyLength, SnakeWidth));
+
+        const double eyeHeight = CellSize * 0.2,
+            eyeWidth = CellSize * 0.25,
+            eyeX = bodyX + bodyLength - eyeWidth - SnakeWidth * 0.1,
+            topEyeY = bodyY + (SnakeWidth - eyeHeight * 2.0) / 3.0,
+            bottomEyeY = bodyY + (SnakeWidth - eyeHeight * 2.0) * 2.0 / 3.0 + eyeHeight,
+            pupilSize = eyeHeight / 2.0,
+            pupilX = eyeX + (eyeWidth - pupilSize) / 2.0,
+            topPupilY = topEyeY + (eyeHeight - pupilSize) / 2.0,
+            bottomPupilY = bottomEyeY + (eyeHeight - pupilSize) / 2.0;
+
+        context.DrawRectangle(Brushes.White, null,
+            new Rect(eyeX, topEyeY,
+                eyeWidth, eyeHeight));
+
+        context.DrawRectangle(Brushes.White, null,
+            new Rect(eyeX, bottomEyeY,
+                eyeWidth, eyeHeight));
+
+        context.DrawRectangle(Brushes.Black, null,
+            new Rect(pupilX, topPupilY,
+                pupilSize, pupilSize));
+
+        context.DrawRectangle(Brushes.Black, null,
+            new Rect(pupilX, bottomPupilY,
+                pupilSize, pupilSize));
+    }
+
+    private void DrawLoneSnakeHead(DrawingContext context)
+    {
+        const double bodyX = (CellSize - SnakeWidth) / 2.0,
+            bodyY = bodyX;
+
+        context.DrawRectangle(SnakeBrush, null,
+                    new Rect(bodyX, bodyY,
+                        SnakeWidth, SnakeWidth));
+
+        const double eyeHeight = CellSize * 0.2,
+            eyeWidth = CellSize * 0.25,
+            eyeX = bodyX + SnakeWidth - eyeWidth - SnakeWidth * 0.1,
+            topEyeY = bodyY + (SnakeWidth - eyeHeight * 2.0) / 3.0,
+            bottomEyeY = bodyY + (SnakeWidth - eyeHeight * 2.0) * 2.0 / 3.0 + eyeHeight,
+            pupilSize = eyeHeight / 2.0,
+            pupilX = eyeX + (eyeWidth - pupilSize) / 2.0,
+            topPupilY = topEyeY + (eyeHeight - pupilSize) / 2.0,
+            bottomPupilY = bottomEyeY + (eyeHeight - pupilSize) / 2.0;
+
+        context.DrawRectangle(Brushes.White, null,
+            new Rect(eyeX, topEyeY,
+                eyeWidth, eyeHeight));
+
+        context.DrawRectangle(Brushes.White, null,
+            new Rect(eyeX, bottomEyeY,
+                eyeWidth, eyeHeight));
+
+        context.DrawRectangle(Brushes.Black, null,
+            new Rect(pupilX, topPupilY,
+                pupilSize, pupilSize));
+
+        context.DrawRectangle(Brushes.Black, null,
+            new Rect(pupilX, bottomPupilY,
+                pupilSize, pupilSize));
     }
 
     private void DrawGameOver(DrawingContext context)

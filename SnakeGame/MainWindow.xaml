@@ -34,6 +34,6 @@
     <Viewbox>
         <local:SnakeGameControl DesiredFramerate="60"
          BackgroundBrush="{StaticResource backgroundBrush}"
-         HorizontalSize="20" VerticalSize="16" x:Name="gameControl"/>
+         HorizontalSize="16" VerticalSize="10" x:Name="gameControl"/>
     </Viewbox>
 </Window>
