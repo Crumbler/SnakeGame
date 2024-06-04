@@ -25,7 +25,7 @@ public sealed class Game
     public (int y, int x) FoodPosition
     {
         get;
-        private set;
+        internal set;
     }
 
     public IReadOnlyList<(sbyte y, sbyte x)> SnakeParts => snakeParts;

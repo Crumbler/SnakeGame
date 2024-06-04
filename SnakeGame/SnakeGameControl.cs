@@ -239,11 +239,6 @@ public sealed class SnakeGameControl : UIElement, IDisposable
 
     protected override void OnRender(DrawingContext drawingContext)
     {
-        if (drawingContext == null)
-        {
-            return;
-        }
-
         DrawBackground(drawingContext);
 
         switch (game.State)
