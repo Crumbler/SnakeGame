@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  DOTNET_VERSION: '8'
+  DOTNET_VERSION: ${{ vars.DOTNET_VERSION || '8' }}
 
 jobs:
   build:
