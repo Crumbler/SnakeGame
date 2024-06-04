@@ -1,5 +1,8 @@
 name: Publish
 
+on:
+  workflow_dispatch:
+
 env:
   DOTNET_VERSION: ${{ vars.DOTNET_VERSION }}
 
