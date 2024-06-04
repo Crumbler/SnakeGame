@@ -1,0 +1,30 @@
+﻿name: Build & Test
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  DOTNET_VERSION: '8'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install dependencies
+        run: dotnet restore GameTests
+
+      - name: Build
+        run: dotnet build GameTests --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test GameTests --configuration Release --no-restore --no-build
