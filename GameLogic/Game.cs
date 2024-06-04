@@ -156,7 +156,7 @@ public sealed class Game
     private (int y, int x) FindEmptyCell()
     {
         (int y, int x) pos;
-
+        
         do
         {
             pos = (random.Next(verticalSize), random.Next(horizontalSize));

@@ -5,9 +5,14 @@ VisualStudioVersion = 17.10.34916.146
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SnakeGame", "SnakeGame\SnakeGame.csproj", "{917A2DBD-1B68-4661-98A0-85BBC4345267}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomTimers", "CustomTimers\CustomTimers.csproj", "{FBEF96AF-51BA-4EE4-AA2F-5884EB22C98F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomTimers", "CustomTimers\CustomTimers.csproj", "{FBEF96AF-51BA-4EE4-AA2F-5884EB22C98F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameLogic", "GameLogic\GameLogic.csproj", "{5C82DA5C-BC0B-486E-9835-545934FB6DDE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GameLogic", "GameLogic\GameLogic.csproj", "{5C82DA5C-BC0B-486E-9835-545934FB6DDE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{642E2F7F-5186-4156-A2D3-AAE33113C6B1}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

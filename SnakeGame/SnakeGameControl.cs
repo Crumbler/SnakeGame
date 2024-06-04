@@ -13,7 +13,7 @@ using System.Windows.Threading;
 
 namespace SnakeGame;
 
-public sealed class SnakeGameControl : UIElement
+public sealed class SnakeGameControl : UIElement, IDisposable
 {
     private const double CellSize = 10,
         SnakeWidth = CellSize * 0.7;
@@ -237,22 +237,27 @@ public sealed class SnakeGameControl : UIElement
         }
     }
 
-    protected override void OnRender(DrawingContext context)
+    protected override void OnRender(DrawingContext drawingContext)
     {
-        DrawBackground(context);
+        if (drawingContext == null)
+        {
+            return;
+        }
+
+        DrawBackground(drawingContext);
 
         switch (game.State)
         {
             case GameState.NotStarted:
-                DrawGameNotStarted(context);
+                DrawGameNotStarted(drawingContext);
                 break;
 
             case GameState.Running:
-                DrawGame(context);
+                DrawGame(drawingContext);
                 break;
 
             case GameState.Over:
-                DrawGameOver(context);
+                DrawGameOver(drawingContext);
                 break;
         }
     }
@@ -523,4 +528,9 @@ public sealed class SnakeGameControl : UIElement
 
     protected override Size MeasureCore(Size availableSize) =>
         new(horizontalSize * CellSize, verticalSize * CellSize);
+
+    public void Dispose()
+    {
+        gameTimer.Dispose();
+    }
 }

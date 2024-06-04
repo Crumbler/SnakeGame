@@ -9,12 +9,12 @@ namespace CustomTimers
     /// <summary>
     /// A timer based on the multimedia timer API with 1ms precision.
     /// </summary>
-    public class MultimediaTimer : IDisposable
+    public sealed class MultimediaTimer : IDisposable
     {
         private const int EventTypeSingle = 0;
         private const int EventTypePeriodic = 1;
 
-        private bool disposed = false;
+        private bool disposed;
         private int interval, resolution;
         private volatile uint timerId;
 
@@ -155,6 +155,7 @@ namespace CustomTimers
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         private void TimerCallbackMethod(uint id, uint msg, ref uint userCtx, uint rsv1, uint rsv2)
@@ -183,7 +184,6 @@ namespace CustomTimers
             if (disposing)
             {
                 Elapsed = null;
-                GC.SuppressFinalize(this);
             }
         }
     }
