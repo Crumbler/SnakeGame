@@ -5,6 +5,7 @@
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<AnalysisMode>All</AnalysisMode>
+		<InvariantGlobalization>true</InvariantGlobalization>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
 		<DebugType>embedded</DebugType>
