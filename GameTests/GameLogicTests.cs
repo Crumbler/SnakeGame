@@ -167,6 +167,7 @@ public static class GameLogicTests
         };
 
         game.Start();
+
         game.Advance();
 
         return game;
